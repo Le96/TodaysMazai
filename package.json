@@ -1,0 +1,26 @@
+{
+  "name": "todays-mazai",
+  "version": "1.0.0",
+  "description": "Be the Monster Energy addict.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Le96/TodaysMazai.git"
+  },
+  "keywords": [
+    "mazai"
+  ],
+  "author": "Le96",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Le96/TodaysMazai/issues"
+  },
+  "homepage": "https://github.com/Le96/TodaysMazai#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "twitter": "^1.7.1"
+  }
+}
