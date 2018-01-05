@@ -1,5 +1,6 @@
 // dependency
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
 var express = require('express');
 var fs = require('fs');
 var path = require('path');
@@ -23,6 +24,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: false
 }));
+// cookie parser
+app.use(cookieParser());
 // static file to public
 app.use(express.static(path.join(__dirname, 'public')));
 // path
