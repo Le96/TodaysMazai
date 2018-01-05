@@ -146,6 +146,14 @@ var search = function(req, res){
   });
 }
 
+var fetch = function(){
+  return readData();
+}
+
+var update = function(req){
+  writeData(req.lastFoundDate, req.totalFirstDate, req.totalCount, req.thisYearCount);
+}
+
 // APIs
 // search API
 // search '#TodaysMazai' tweet and like/mention it.
