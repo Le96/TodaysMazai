@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <%- include('header') -%>
+  <body>
+    <h1>#TodaysMazai</h1>
+    <form id='form'>
+      <p>
+        <label for='lfd'>LastFoundDate</label>
+        <input class='input' id='lfd' type='date' name='lfd' />
+      </p>
+      <p>
+        <label for='tfd'>TotalFirstDate</label>
+        <input class='input' id='tfd' type='date' name='tfd' />
+      </p>
+      <p>
+        <label for='tc'>TotalCount</label>
+        <input class='input' id='tc' type='number' name='tc' />
+      </p>
+      <p>
+        <label for='tyc'>ThisYearCount</label>
+        <input class='input' id='tyc' type='number' name='tyc' />
+      </p>
+      <div class='settings'></div>
+      <script src='https://code.jquery.com/jquery-git.js'></script>
+      <script src='javascripts/index.js'></script>
+  </body>
+</html>
