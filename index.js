@@ -1,9 +1,7 @@
 // dependency
-var async = require('async');
 var bodyParser = require('body-parser');
 var express = require('express');
 var fs = require('fs');
-var morgan = require('morgan');
 var path = require('path');
 var twitter = require('twitter');
 var util = require('util');
@@ -27,8 +25,6 @@ app.use(bodyParser.urlencoded({
 }));
 // static file to public
 app.use(express.static(path.join(__dirname, 'public')));
-// logger
-app.use(morgan('dev'));
 // path
 app.use('/', index);
 
