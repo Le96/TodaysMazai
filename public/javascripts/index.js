@@ -1,28 +1,35 @@
 // initial process
-$(function(){
+$(function() {
+  searchTweet();
   getData();
 });
 
 // update on submit in #form
-$('#form').submit(function(){
+$('#form').submit(function() {
   updateData();
   return false;
 });
 
+// search tweet about #TodaysMazai
+function searchTweet() {
+  $.post('search', null);
+}
+
 // get data and re-draw
-function getData(){
-  var $settings = $('.settings');
-  $settings.fadeOut(function(){
+function getData() {
+  var $settings = $('#settings');
+  $settings.fadeOut(function() {
     $settings.children().remove();
-    $.get('fetch', function(setting){
-      var lfd = new Date(setting.lastFoundDate);
-      var tfd = new Date(setting.totalFirstDate);
-      var tc = setting.totalCount;
-      var tyc = setting.thisYearCount;
-      $settings.append('<p>Latest tweet date found in search result of #TodaysMazai : ' + lfd + '</p><br>' +
-        '<p>#TodaysMazai start date : ' + tfd + '</p><br>' +
-        '<p>Total count of #TodaysMazai : ' + tc + '</p><br>' +
-        '<p>This year count of #TodaysMazai : ' + tyc + '</p>'
+    $.get('fetch', function(res) {
+      var lfd = res.lastFoundDate;
+      var tfd = res.totalFirstDate;
+      var tc = res.totalCount;
+      var tyc = res.thisYearCount;
+      updateForm(lfd, tfd, tc, tyc);
+      $settings.append('<p>Latest tweet date found in search result of #TodaysMazai : ' + lfd + '<br>' +
+        '#TodaysMazai start date : ' + tfd + '<br>' +
+        'Total count of #TodaysMazai : ' + tc + '<br>' +
+        'This year count of #TodaysMazai : ' + tyc + '</p>'
       );
       $settings.fadeIn();
     });
@@ -30,24 +37,27 @@ function getData(){
 }
 
 // update data
-function updateData(){
-  var lfd = new Date($('#lfd').val());
-  var tfd = new Date($('#tfd').val());
-  var tc = parseInt($('#tc').val());
-  var tyc = parseInt($('#tyc').val());
-  clearForm();
+function updateData() {
+  var lfd = $('#lfd').val() + '.000Z';
+  var tfd = $('#tfd').val() + '.000Z';
+  var tc = $('#tc').val();
+  var tyc = $('#tyc').val();
+  updateForm(lfd, tfd, tc, tyc);
   $.post('update', {
-    lastFoundDate: lfd,
-    totalFirstDate: tfd,
-    totalCount: tc,
-    thisYearCount: tyc
-  }, function(res){
+    lfd: lfd,
+    tfd: tfd,
+    tc: tc,
+    tyc: tyc
+  }, function(res) {
     console.log(res);
     getData();
-  })
+  });
 }
 
-// clear form
-function clearForm(){
-  $('.input').val('');
+// update form
+function updateForm(lfd, tfd, tc, tyc) {
+  $('#lfd').val(new Date(lfd).toISOString().split('.')[0]);
+  $('#tfd').val(new Date(tfd).toISOString().split('.')[0]);
+  $('#tc').val(parseInt(tc));
+  $('#tyc').val(parseInt(tyc));
 }
