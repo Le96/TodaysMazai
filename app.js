@@ -1,187 +1,274 @@
 // dependency
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-var express = require('express');
-var fs = require('fs');
-var logger = require('morgan');
-var path = require('path');
-var twitter = require('twitter');
-var util = require('util');
+const bodyParser = require('body-parser');
+const express = require('express');
+const path = require('path');
+const pg = require('pg');
+const twitter = require('twitter');
+const url = require('url');
 
 // path
-var index = require('./routes/index');
-var users = require('./routes/users');
-var preferences = './resources/preferences.json';
+const index = require('./routes/index');
 
 // application
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'ejs');
 
 // middleware setup
-// logger
-app.use(logger('dev'));
 // json parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: false
 }));
-// cookie parser
-app.use(cookieParser());
 // static file to public
 app.use(express.static(path.join(__dirname, 'public')));
 // path
 app.use('/', index);
-app.use('/users', users);
 
-// twitter setting
-var client = new twitter({
+// twitter setup
+const twitterClient = new twitter({
   consumer_key: process.env.CONSUMER_KEY,
   consumer_secret: process.env.CONSUMER_SECRET,
   access_token_key: process.env.ACCESS_TOKEN_KEY,
   access_token_secret: process.env.ACCESS_TOKEN_SECRET
 });
-var myScrName = '_Le96_';
 
-// basic functions
-// check existence of preference file
-var checkData = function() {
-  try {
-    fs.statSync(preferences);
-    return true;
-  } catch(err) {
-    return false;
-  }
-}
+// database settings
+const params = url.parse(process.env.DATABASE_URL);
+const auth = params.auth.split(':');
+const config = {
+  user: auth[0],
+  password: auth[1],
+  host: params.hostname,
+  port: params.port,
+  database: params.pathname.split('/')[1],
+  ssl: true
+};
+/*
+const config = {
+  user: 'lcexexylvojxzd',
+  password: '0298898030c56cfc5d50102546df63cd515915e2c6640a1c32683a5d7ab27f61',
+  host: 'ec2-54-83-59-144.compute-1.amazonaws.com',
+  port: 5432,
+  database: 'dbqc8ibpu7dron',
+  ssl: true
+};
+*/
+const table = 'settings';
+let pool = new pg.Pool(config);
 
-// overwrite preference file
-var writeData = function(lastFoundDate, totalFirstDate, totalCount, thisYearCount) {
-  var lfd = new Date(lastFoundDate).toISOString();
-  var tfd = new Date(totalFirstDate).toISOString();
-  var tc = parseInt(totalCount);
-  var tyc = parseInt(thisYearCount);
-  if (lfd && tfd && tc && tyc) {
-    try {
-      fs.writeFileSync(preferences, '{\n  ' +
-        '"lastFoundDate": "' + lfd + '",\n  ' +
-        '"totalFirstDate": "' + tfd + '",\n  ' +
-        '"totalCount": ' + tc + ',\n  ' +
-        '"thisYearCount": ' + tyc + '\n}\n');
-      return true;
-    } catch(err) {
-      return false;
-    }
-  } else {
-    return false;
-  }
-}
-
-// read preference file
-var readData = function() {
-  var content = new String();
-  if (checkData()) {
-    content = JSON.parse(fs.readFileSync(preferences, 'utf8'));
-  }
-  return content;
-}
+// basic functions for database (CRUD)
+const createDB = data => {
+  console.log('creating new tuple by', data);
+  return new Promise((resolve, reject) => {
+    pool.connect((err, client, release) => {
+      if (err) {
+        console.error('connection error occurred in creating.');
+        reject(err);
+      }
+      const query =
+        'INSERT INTO ' + table + ' ' +
+        'VALUES(DEFAULT, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ' +
+        "'" + data.screenName + "', " + data.mention + ', ' + data.lastStatus +
+        ", '" + data.createdAt + "', DEFAULT, DEFAULT);";
+      console.log(query);
+      client.query(query, (err, res) => {
+        if (err) {
+          console.error('process error occurred in read querying.');
+          reject(err);
+        } else {
+          resolve(true);
+        }
+        client.end();
+      });
+    });
+  });
+};
+const readDB = screenName => {
+  console.log('reading ' + (screenName ? 'DB by ' + screenName + '.' :
+    'the entire DB.'));
+  return new Promise((resolve, reject) => {
+    pool.connect((err, client, release) => {
+      if (err) {
+        console.error('connection error occurred in reading.');
+        reject(err);
+      }
+      let query;
+      if (screenName) {
+        query =
+          'SELECT * ' +
+          'FROM ' + table + ' ' +
+          "WHERE screen_name = '" + screenName + "' " +
+          'LIMIT 1;';
+      } else {
+        query = 'SELECT * FROM ' + table + ' ORDER BY id ASC;';
+      }
+      console.log(query);
+      client.query(query, (err, res) => {
+        if (err) {
+          console.error('process error occurred in read querying.');
+          reject(err);
+        } else {
+          resolve(res);
+        }
+        client.end();
+      });
+    });
+  });
+};
+const updateDB = data => {
+  console.log('updating DB by', data);
+  return new Promise((resolve, reject) => {
+    pool.connect((err, client, release) => {
+      if (err) {
+        console.error('connection error occurred in updating.');
+        reject(err);
+      }
+      const query =
+        'UPDATE ' + table + ' ' +
+        'SET updated_at = CURRENT_TIMESTAMP, ' +
+        'last_status = ' + data.lastStatus + ', ' +
+        'total_count = total_count + 1, ' +
+        'this_year_count = this_year_count + 1 ' +
+        "WHERE screen_name = '" + data.screenName + "';";
+      console.log(query);
+      client.query(query, (err, res) => {
+        if (err) {
+          console.error('process error occurred in update querying.');
+          reject(err);
+        } else {
+          resolve(res);
+        }
+        client.end();
+      });
+    });
+  });
+};
 
 // like tweet that has specified id
-var like = function(id_str) {
-  client.post('favorites/create', {id: id_str}, function(err, data, res) {
-    console.log(data);
+const like = idStr => {
+  twitterClient.post('favorites/create', {id: idStr}, (err, data, res) => {
+    if (err) {
+      console.error('post error occurred in processing like.');
+      console.error(err.stack);
+      return false
+    } else {
+      console.log(data, res);
+      return true
+    }
   });
 }
 
-// mention me some data
-var mention = function(tweet, lfd, tfd_, tc, tyc) {
-  var tweetDate = new Date(tweet.created_at).getTime();
-  var tfd = new Date(tfd_).getTime();
-  var thisYear = new Date().getFullYear();
-  var thisYearFirstDate = new Date(thisYear + '-01-01T00:00:00.000Z').getTime();
-  var totalDays = (tweetDate - tfd) / (86400000.0);
-  var thisYearDays = (tweetDate - thisYearFirstDate) / (86400000.0);
-  var totalRatio = tc / totalDays;
-  var thisYearRatio = tyc / thisYearDays;
-  var text = 'Total : ' + tc + '\n' +
-  'In ' + thisYear + ' : ' + tyc + '\n' +
-  'Total MPD : ' + totalRatio + '[mpd]\n' +
-  'In ' + thisYear + ' MPD : ' + thisYearRatio + '[mpd]\n' +
-  'Have a good Mazai!';
-  client.post('statuses/update', {
+// mention with data
+const mention = (tweet, data) => {
+  const createdAt = new Date(tweet.created_at).getTime();
+  const startedAt = new Date(data.started_at).getTime();
+  const thisYear = new Date().getFullYear();
+  const thisYearFirstDate = new Date(thisYear + '-01-01T00:00:00Z').getTime();
+  const totalRatio = data.totalCount * 86400000 / (createdAt - startedAt);
+  const thisYearRatio =
+    data.thisYearCount * 86400000 / (createdAt - thisYearFirstDate);
+  const text =
+    'Total: ' + data.totalCount + '\n' +
+    'In ' + thisYear + ': ' + data.thisYearCount + '\n' +
+    'Total MPD: ' + totalRatio + '[mpd]\n' +
+    'In ' + thisYear + ' MPD: ' + thisYearRatio + '[mpd]\n' +
+    'Have a good Mazai!';
+  console.log(text);
+  twitterClient.post('statuses/update', {
     in_reply_to_status_id: tweet.id_str,
-    status: '@' + myScrName + '\n' + text
-  }, function(err, data, res) {
-    console.log(data);
+    status: '@' + tweet.user.screen_name + '\n' + text
+  }, (err, data, res) => {
+    if (err) {
+      console.error('post error occurred in processing mention.');
+      console.error(err.stack);
+      return false
+    }
+    console.log(data, res);
+    return true
   });
 }
 
 // search '#TodaysMazai' tweet and like/mention it
-var search = function(req, res) {
-  var query = '#TodaysMazai';
-  var c = 10;
-  var settings = readData();
-  var finish = false;
-  var lfd = new Date(settings.lastFoundDate);
-  var tfd = new Date(settings.totalFirstDate);
-  var tc = parseInt(settings.totalCount);
-  var tyc = parseInt(settings.thisYearCount);
-  client.get('search/tweets', {
-    count: c + '',
+const search = () => {
+  console.log('searching #TodaysMazai tweet.');
+  const query = '#TodaysMazai';
+  const count = '4';
+  twitterClient.get('search/tweets', {
+    count: count,
     result_type: 'recent',
     q: query
-  }, function(error, result, response) {
-    result.statuses.reverse().forEach(function(tweet) {
-      var tweetDate = new Date(tweet.created_at);
-      if (lfd.getTime() < tweetDate.getTime()) {
-        lfd = tweetDate;
-        if (tweet.user.screen_name != myScrName) {
-          like(tweet.id_str);
-          console.log('liked:');
-        } else {
-          tc++;
-          tyc++;
-          mention(tweet, lfd, tfd, tc, tyc);
-          console.log('mentioned:');
-        }
-        // print tweet
-        console.log('from:' + tweet.user.screen_name);
-        console.log(tweet.text);
-        console.log('at:' + tweet.created_at);
+  }, async (error, result, response) => {
+    if (error) {
+      console.error('get error occurred in processing search.');
+      console.error(error.stack);
+      return;
+    }
+    revStatuses = result.statuses.reverse();
+    for (let tweet of revStatuses) {
+      const statusID = tweet.id_str;
+      const screenName = tweet.user.screen_name;
+      let settings = await readDB(screenName);
+      if (settings.rowCount === 0) {
+        // new TodaysMazaist
+        await createDB({
+          createdAt: tweet.created_at,
+          lastStatus: tweet.id_str,
+          mention: false,
+          screenName: screenName
+        });
+        settings = await readDB(screenName);
       }
-    });
-    writeData(lfd, tfd, tc, tyc);
+      settings = settings.rows[0];
+      if (settings.last_status < tweet.id_str) {
+        if (screenName != '_Le96_') {
+          like(tweet.id_str);
+        }
+        if (settings.mention) {
+          mention(tweet, {
+            started_at: settings.started_at,
+            thisYearCount: settings.this_year_count + 1,
+            totalCount: settings.total_count + 1
+          });
+        }
+        await updateDB({
+          lastStatus: tweet.id_str,
+          screenName: screenName
+        });
+      }
+    }
   });
 }
 
 // APIs
 // search API
-app.post('/search', function(req, res) {
+app.post('/search', (req, res) => {
   search();
   res.send(true);
 });
 
-// fetch API
-app.get('/fetch', function(req, res) {
-  res.send(readData());
+// fetch API (in develop)
+app.get('/fetch', async (req, res) => {
+  res.send(await readDB(null));
 });
 
-// update API
-app.post('/update', function(req, res) {
-  var body = req.body;
+// update API (deprecated)
+app.post('/update', (req, res) => {
+  const body = req.body;
   res.send(writeData(body.lfd, body.tfd, body.tc, body.tyc));
 });
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -191,3 +278,16 @@ app.use(function(err, req, res, next) {
 });
 
 module.exports = app;
+
+// main
+const sleep = () => {
+  return new Promise(resolve => setTimeout(resolve, 8000));
+};
+const main = async () => {
+  while (true) {
+    pool = new pg.Pool(config);
+    await search();
+    await sleep();
+  }
+};
+main();

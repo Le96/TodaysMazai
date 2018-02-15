@@ -3,22 +3,12 @@
   <%- include('header') -%>
   <body>
     <h1>#TodaysMazai</h1>
-    <form id='form'>
-      <label for='lfd'>LastFoundDate : </label>
-      <input class='input' id='lfd' step=1 type='datetime-local' name='lfd' />
-      <br>
-      <label for='tfd'>TotalFirstDate : </label>
-      <input class='input' id='tfd' step=1 type='datetime-local' name='tfd' />
-      <br>
-      <label for='tc'>TotalCount : </label>
-      <input class='input' id='tc' type='number' name='tc' />
-      <br>
-      <label for='tyc'>ThisYearCount : </label>
-      <input class='input' id='tyc' type='number' name='tyc' />
-      <br>
-      <input type='submit' value='update' />
-    </form>
-    <div id='settings'><p>fetching settings...</p></div>
+    <p>Be the Monster Energy addict.</p>
+    <input id='reload' type='button' value='reload'>
+    <p>They are all TodaysMazaist.</p>
+    <table id='list'>
+      <tr><td>fetching data from DB...</td></tr>
+    </table>
     <script src='https://code.jquery.com/jquery-git.js'></script>
     <script src='javascripts/index.js'></script>
   </body>
