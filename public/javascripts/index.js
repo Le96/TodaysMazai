@@ -25,7 +25,7 @@ const getData = () => {
           '<td>' + r.id + '</td>' +
           '<td>' + r.created_at + '</td>' +
           '<td>' + r.updated_at + '</td>' +
-          '<td><a href="https://twitter.com/' + r.scren_name + '/">' +
+          '<td><a href="https://twitter.com/' + r.screen_name + '/">' +
             r.screen_name + '</a></td>' +
           '<td>' + (r.mention ? '\u2611' : '\u2610') + '</td>' +
           '<td><a href="https://twitter.com/' + r.screen_name + '/status/' +
