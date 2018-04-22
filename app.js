@@ -46,16 +46,6 @@ const config = {
   database: params.pathname.split('/')[1],
   ssl: true
 };
-/*
-const config = {
-  user: 'lcexexylvojxzd',
-  password: '0298898030c56cfc5d50102546df63cd515915e2c6640a1c32683a5d7ab27f61',
-  host: 'ec2-54-83-59-144.compute-1.amazonaws.com',
-  port: 5432,
-  database: 'dbqc8ibpu7dron',
-  ssl: true
-};
-*/
 const table = 'settings';
 let pool = new pg.Pool(config);
 
