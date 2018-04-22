@@ -198,6 +198,9 @@ const search = () => {
     }
     revStatuses = result.statuses.reverse();
     for (let tweet of revStatuses) {
+      if (tweet.retweeted) {
+        continue;
+      }
       const statusID = tweet.id_str;
       const screenName = tweet.user.screen_name;
       let settings = await readDB(screenName);
