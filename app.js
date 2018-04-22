@@ -184,7 +184,7 @@ const mention = (tweet, data) => {
 // search '#TodaysMazai' tweet and like/mention it
 const search = () => {
   console.log('searching #TodaysMazai tweet.');
-  const query = '#TodaysMazai';
+  const query = '#TodaysMazai exclude:retweets';
   const count = '4';
   twitterClient.get('search/tweets', {
     count: count,
@@ -198,9 +198,6 @@ const search = () => {
     }
     revStatuses = result.statuses.reverse();
     for (let tweet of revStatuses) {
-      if (tweet.retweeted) {
-        continue;
-      }
       const statusID = tweet.id_str;
       const screenName = tweet.user.screen_name;
       let settings = await readDB(screenName);
