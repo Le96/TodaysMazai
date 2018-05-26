@@ -139,14 +139,16 @@ const updateDB = data => {
 
 // like tweet that has specified id
 const like = idStr => {
-  twitterClient.post('favorites/create', {id: idStr}, (err, data, res) => {
+  twitterClient.post('favorites/create', {
+    id: idStr
+  }, (err, data, res) => {
     if (err) {
       console.error('post error occurred in processing like.');
       console.error(err.stack);
-      return false
+      return false;
     } else {
       console.log(data, res);
-      return true
+      return true;
     }
   });
 }
@@ -212,10 +214,14 @@ const search = () => {
         settings = await readDB(screenName);
       }
       settings = settings.rows[0];
+      while (settings.last_status.length < 19) {
+        settings.last_status = '0' + settings.last_status;
+      }
+      while (tweet.id_str.length < 19) {
+        tweet.id_str = '0' + tweet.id_str;
+      }
       if (settings.last_status < tweet.id_str) {
-        if (screenName != '_Le96_') {
-          like(tweet.id_str);
-        }
+        like(tweet.id_str);
         if (settings.mention) {
           mention(tweet, {
             started_at: settings.started_at,
