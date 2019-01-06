@@ -25,7 +25,7 @@ const getData = () => {
           r.id + '</a></td>' +
           '<td>' + (r.mention ? '\u2611' : '\u2610') + '</td>' +
           '<td><a href="https://twitter.com/' + r.id + '/status/' +
-          r.last_status + '">' + r.last_status + '</a></td>' +
+          r.latest_status + '">' + r.latest_status + '</a></td>' +
           '<td>' + r.prev_year_count + '</td>' +
           '<td>' + (r.total_count ? r.total_count : '-') + '</td>' +
           '<td>' + r.this_year_count + '</td>' +
