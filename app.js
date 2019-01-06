@@ -46,7 +46,7 @@ const config = {
   database: params.pathname.split('/')[1],
   ssl: true
 };
-const table = 'settings';
+const table = 'mazai_hist';
 let pool = new pg.Pool(config);
 
 // basic functions for database (CRUD)
@@ -59,10 +59,11 @@ const createDB = data => {
         reject(err);
       }
       const query =
+        "SET TIME ZONE 'Japan'; " +
         'INSERT INTO ' + table + ' ' +
-        'VALUES(DEFAULT, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ' +
-        "'" + data.screenName + "', " + data.mention + ', ' + data.lastStatus +
-        ", '" + data.createdAt + "', DEFAULT, DEFAULT);";
+        "VALUES ('" + data.screenName + "', " + data.mention + ', ' +
+        data.latestStatus + ", '0,0', DEFAULT, DEFAULT, CURRENT_TIMESTAMP, " +
+        "CURRENT_TIMESTAMP);";
       console.log(query);
       client.query(query, (err, res) => {
         if (err) {
@@ -90,7 +91,7 @@ const readDB = screenName => {
         query =
           'SELECT * ' +
           'FROM ' + table + ' ' +
-          "WHERE screen_name = '" + screenName + "' " +
+          "WHERE id = '" + screenName + "' " +
           'LIMIT 1;';
       } else {
         query = 'SELECT * FROM ' + table + ' ORDER BY id ASC;';
@@ -117,12 +118,13 @@ const updateDB = data => {
         reject(err);
       }
       const query =
+        "SET TIME ZONE 'Japan'; " +
         'UPDATE ' + table + ' ' +
         'SET updated_at = CURRENT_TIMESTAMP, ' +
-        'last_status = ' + data.lastStatus + ', ' +
+        'latest_status = ' + data.latestStatus + ', ' +
         'total_count = total_count + 1, ' +
         'this_year_count = this_year_count + 1 ' +
-        "WHERE screen_name = '" + data.screenName + "';";
+        "WHERE id = '" + data.screenName + "';";
       console.log(query);
       client.query(query, (err, res) => {
         if (err) {
@@ -155,10 +157,11 @@ const like = idStr => {
 
 // mention with data
 const mention = (tweet, data) => {
-  const createdAt = new Date(tweet.created_at).getTime();
-  const startedAt = new Date(data.started_at).getTime();
+  const createdAt = new Date(tweet.created_at + '+0000').getTime();
+  const startedAt = new Date(data.created_at).getTime();
   const thisYear = new Date().getFullYear();
-  const thisYearFirstDate = new Date(thisYear + '-01-01T00:00:00Z').getTime();
+  const thisYearFirstDate =
+    new Date(thisYear + '-01-01T00:00:00+0900').getTime();
   const totalRatio = data.totalCount * 86400000 / (createdAt - startedAt);
   const thisYearRatio =
     data.thisYearCount * 86400000 / (createdAt - thisYearFirstDate);
@@ -187,7 +190,7 @@ const mention = (tweet, data) => {
 const search = () => {
   console.log('searching #TodaysMazai tweet.');
   const query = '#TodaysMazai exclude:retweets';
-  const count = '4';
+  const count = '5';
   twitterClient.get('search/tweets', {
     count: count,
     result_type: 'recent',
@@ -207,30 +210,30 @@ const search = () => {
         // new TodaysMazaist
         await createDB({
           createdAt: tweet.created_at,
-          lastStatus: tweet.id_str,
-          mention: false,
+          latestStatus: tweet.id_str,
+          mention: true,
           screenName: screenName
         });
         settings = await readDB(screenName);
       }
       settings = settings.rows[0];
-      while (settings.last_status.length < 19) {
-        settings.last_status = '0' + settings.last_status;
+      while (settings.latest_status.length < 19) {
+        settings.latest_status = '0' + settings.latest_status;
       }
       while (tweet.id_str.length < 19) {
         tweet.id_str = '0' + tweet.id_str;
       }
-      if (settings.last_status < tweet.id_str) {
+      if (settings.latest_status < tweet.id_str) {
         like(tweet.id_str);
         if (settings.mention) {
           mention(tweet, {
-            started_at: settings.started_at,
+            created_at: settings.created_at,
             thisYearCount: settings.this_year_count + 1,
             totalCount: settings.total_count + 1
           });
         }
         await updateDB({
-          lastStatus: tweet.id_str,
+          latestStatus: tweet.id_str,
           screenName: screenName
         });
       }
