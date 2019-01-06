@@ -94,7 +94,8 @@ const readDB = screenName => {
           "WHERE id = '" + screenName + "' " +
           'LIMIT 1;';
       } else {
-        query = 'SELECT * FROM ' + table + ' ORDER BY id ASC;';
+        query = 'SELECT id, mention, cast(latest_status as text), ' +
+          'prev_year_count, total_count, this_year_count, created_at, ' + 'updated_at FROM ' + table + ' ORDER BY id ASC;';
       }
       console.log(query);
       client.query(query, (err, res) => {
