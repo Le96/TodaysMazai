@@ -16,23 +16,21 @@ const getData = () => {
   let $list = $('#list');
   $list.fadeOut(async () => {
     $list.empty();
-    $list.append('<tr><th>id</th><th>created_at</th><th>updated_at</th>' +
-      '<th>screen_name</th><th>mention</th><th>last_status</th>' +
-      '<th>started_at</th><th>total_count</th><th>this_year_count</th></tr>');
+    $list.append('<tr><th>id(screen_name)</th><th>mention</th>' +
+      '<th>latest_status</th><th>prev_year_count</th><th>total_count</th>' + '<th>this_year_count</th><th>created_at</th><th>updated_at</th></tr>');
     $.get('fetch', res => {
       for (let r of res.rows) {
         const row = '<tr>' +
-          '<td>' + r.id + '</td>' +
-          '<td>' + r.created_at + '</td>' +
-          '<td>' + r.updated_at + '</td>' +
-          '<td><a href="https://twitter.com/' + r.screen_name + '/">' +
-            r.screen_name + '</a></td>' +
+          '<td><a href="https://twitter.com/' + r.id + '/">' +
+          r.id + '</a></td>' +
           '<td>' + (r.mention ? '\u2611' : '\u2610') + '</td>' +
-          '<td><a href="https://twitter.com/' + r.screen_name + '/status/' +
-            r.last_status + '">' + r.last_status + '</a></td>' +
-          '<td>' + r.started_at + '</td>' +
+          '<td><a href="https://twitter.com/' + r.id + '/status/' +
+          r.last_status + '">' + r.last_status + '</a></td>' +
+          '<td>' + r.prev_year_count + '</td>' +
           '<td>' + (r.total_count ? r.total_count : '-') + '</td>' +
           '<td>' + r.this_year_count + '</td>' +
+          '<td>' + r.created_at + '</td>' +
+          '<td>' + r.updated_at + '</td>' +
           '</tr>';
         $list.append(row);
       }
