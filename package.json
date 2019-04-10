@@ -1,6 +1,6 @@
 {
   "name": "todays-mazai",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Be the Monster Energy addict.",
   "main": "app.js",
   "scripts": {
@@ -21,14 +21,14 @@
   },
   "homepage": "https://github.com/Le96/TodaysMazai#readme",
   "dependencies": {
-    "body-parser": "^1.18.3",
-    "debug": "^3.1.0",
-    "ejs": "^2.6.1",
-    "express": "^4.16.3",
-    "npm": "^6.1.0",
-    "pg": "^7.4.3",
-    "pug": "^2.0.3",
-    "twitter": "^1.7.1",
-    "url": "^0.11.0"
+    "body-parser": "^1.18",
+    "debug": "^3.1",
+    "ejs": "^2.6",
+    "express": "^4.16",
+    "npm": "^6.1",
+    "pg": "^7.4",
+    "pug": "^2.0",
+    "twitter": "^1.7",
+    "url": "^0.11"
   }
 }
