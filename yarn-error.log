@@ -1,0 +1,64 @@
+Arguments: 
+  /usr/local/bin/node /usr/local/bin/yarn install
+
+PATH: 
+  /home/le96/.local/share/virtualenvs/Python-6l6hstYI/bin:/home/le96/.pyenv/shims:/home/le96/.pyenv/bin:/home/le96/.pyenv/shims:/home/le96/.pyenv/bin:/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+
+Yarn version: 
+  1.15.2
+
+Node version: 
+  11.13.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  SyntaxError: /home/le96/github.com/Le96/TodaysMazai/package.json: Unexpected token < in JSON at position 28
+      at JSON.parse (<anonymous>)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/usr/local/lib/node_modules/yarn/lib/cli.js:304:30)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:315:13
+
+npm manifest: 
+  {
+    "name": "todays-mazai",
+  <<<<<<< HEAD
+    "version": "2.0.9",
+  =======
+    "version": "2.0.10",
+  >>>>>>> release/2.0.10
+    "description": "Be the Monster Energy addict.",
+    "main": "app.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": "git+https://github.com/Le96/TodaysMazai.git",
+    "keywords": [
+      "todays",
+      "mazai"
+    ],
+    "author": "Le96",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/Le96/TodaysMazai/issues"
+    },
+    "homepage": "https://github.com/Le96/TodaysMazai#readme",
+    "dependencies": {
+      "body-parser": "*",
+      "debug": "*",
+      "ejs": "*",
+      "express": "*",
+      "pg": "*",
+      "pug": "*",
+      "twitter": "*",
+      "url": "*"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
