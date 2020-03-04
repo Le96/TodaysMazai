@@ -1,15 +1,16 @@
 {
   "name": "todays-mazai",
+<<<<<<< HEAD
   "version": "2.0.9",
+=======
+  "version": "2.0.10",
+>>>>>>> release/2.0.10
   "description": "Be the Monster Energy addict.",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Le96/TodaysMazai.git"
-  },
+  "repository": "git+https://github.com/Le96/TodaysMazai.git",
   "keywords": [
     "todays",
     "mazai"
