@@ -1,6 +1,6 @@
 {
   "name": "todays-mazai",
-  "version": "2.0.7",
+  "version": "2.0.9",
   "description": "Be the Monster Energy addict.",
   "main": "app.js",
   "scripts": {
